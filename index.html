@@ -62,38 +62,61 @@
   .btn-green { background: #16a34a; color: white; }
   .btn-gray { background: #e2e8f0; color: #1a202c; margin-top: 10px; }
   #quiz { display: none; }
+
+  /* 問題文エリア：和英の長い日本語を想定して5行分固定 */
   .word {
     text-align: center;
-    font-size: 1.8rem;
+    font-size: 1.35rem;
     font-weight: bold;
-    padding: 30px 10px;
-    min-height: 80px;
+    padding: 12px 8px;
+    height: 140px;           /* 約5行分 */
+    line-height: 1.4;
     word-break: break-all;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
   }
+
+  /* 答えエリア：3行分固定 */
   .answer {
     background: #dcfce7;
-    padding: 14px;
+    padding: 10px 12px;
     border-radius: 8px;
     text-align: center;
-    margin: 12px 0;
-    min-height: 60px;
+    margin: 8px 0 12px 0;
+    height: 96px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     visibility: hidden;
+    overflow: hidden;
+    box-sizing: border-box;
   }
   .answer.show { visibility: visible; }
+  .answer-label {
+    font-size: 0.85rem;
+    color: #64748b;
+    margin-bottom: 2px;
+  }
+  .answer-text {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #16a34a;
+    line-height: 1.35;
+    word-break: break-all;
+  }
   .info {
     text-align: center;
     color: #64748b;
     font-size: 0.9rem;
     margin: 8px 0;
   }
-  /* ボタン位置を固定する領域 */
   .button-area {
     position: relative;
     height: 52px;
-    margin-top: 8px;
+    margin-top: 4px;
   }
   .button-area button {
     position: absolute;
@@ -133,8 +156,8 @@
     <p class="info" id="remain"></p>
     <div class="word" id="word">---</div>
     <div class="answer" id="answer-box">
-      <div style="font-size:0.85rem;color:#64748b;">答え</div>
-      <div id="answer" style="font-size:1.2rem;font-weight:bold;color:#16a34a;margin-top:4px;"></div>
+      <div class="answer-label">答え</div>
+      <div class="answer-text" id="answer"></div>
     </div>
 
     <div class="button-area">
