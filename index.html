@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>英単語確認テスト</title>
+<style>
+  :root {
+    --bg: #f5f7fa;
+    --card: #ffffff;
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --success: #16a34a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Sans", "Noto Sans JP", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 16px;
+    line-height: 1.6;
+  }
+  .container {
+    max-width: 480px;
+    margin: 0 auto;
+  }
+  h1 {
+    text-align: center;
+    font-size: 1.5rem;
+    margin-bottom: 24px;
+    color: var(--primary);
+  }
+  .card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    margin-bottom: 16px;
+  }
+  label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+    font-size: 0.95rem;
+  }
+  input[type="number"], select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 1rem;
+    margin-bottom: 16px;
+    background: #fff;
+  }
+  .range-row {
+    display: flex;
+    gap: 12px;
+  }
+  .range-row > div { flex: 1; }
+  button {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+  }
+  button:active { transform: scale(0.98); }
+  .btn-primary {
+    background: var(--primary);
+    color: white;
+  }
+  .btn-primary:hover { background: var(--primary-hover); }
+  .btn-secondary {
+    background: #f1f5f9;
+    color: var(--text);
+    margin-top: 10px;
+  }
+  .btn-success {
+    background: var(--success);
+    color: white;
+  }
+  .btn-menu {
+    background: #e2e8f0;
+    color: var(--text);
+    margin-top: 12px;
+    font-size: 0.95rem;
+    padding: 10px;
+  }
+  #quiz-screen { display: none; }
+  .word-display {
+    text-align: center;
+    padding: 32px 16px;
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .word-text {
+    font-size: 1.8rem;
+    font-weight: 700;
+    word-break: break-word;
+  }
+  .answer-area {
+    margin-top: 20px;
+    padding: 16px;
+    background: #f0fdf4;
+    border-radius: 12px;
+    border: 1px solid #bbf7d0;
+    display: none;
+    text-align: center;
+  }
+  .answer-area.visible { display: block; }
+  .answer-label {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .answer-text {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--success);
+  }
+  .info {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-bottom: 16px;
+  }
+  .hidden { display: none !important; }
+  .footer-note {
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 24px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>英単語確認テスト</h1>
+
+  <!-- メニュー画面 -->
+  <div id="menu-screen" class="card">
+    <div class="range-row">
+      <div>
+        <label for="start">開始番号</label>
+        <input type="number" id="start" value="1" min="1" max="1235">
+      </div>
+      <div>
+        <label for="end">終了番号</label>
+        <input type="number" id="end" value="100" min="1" max="1235">
+      </div>
+    </div>
+
+    <label for="mode">モード</label>
+    <select id="mode">
+      <option value="en2jp">英単語 → 日本語</option>
+      <option value="jp2en">日本語 → 英単語</option>
+    </select>
+
+    <button class="btn-primary" id="start-btn">スタート</button>
+    <p class="info" id="range-info" style="margin-top:12px;"></p>
+  </div>
+
+  <!-- 問題画面 -->
+  <div id="quiz-screen" class="card">
+    <div class="info" id="quiz-info"></div>
+    <div class="word-display">
+      <div class="word-text" id="word-text">---</div>
+    </div>
+
+    <div class="answer-area" id="answer-area">
+      <div class="answer-label">答え</div>
+      <div class="answer-text" id="answer-text"></div>
+    </div>
+
+    <button class="btn-primary" id="answer-btn">答え</button>
+    <button class="btn-success hidden" id="next-btn">次へ</button>
+    <button class="btn-menu" id="menu-btn">メニューに戻る</button>
+  </div>
+
+  <p class="footer-note">GitHub Pages 対応・データ収集なし</p>
+</div>
+
+<script>
+const WORDS_URL = 'words.json';
+
+let vocab = [];
+let currentPool = [];
+let currentMode = 'en2jp';
+let currentWord = null;
+let answered = false;
+
+async function loadVocab() {
+  try {
+    const res = await fetch(WORDS_URL);
+    vocab = await res.json();
+    updateRangeInfo();
+  } catch (e) {
+    alert('単語データの読み込みに失敗しました。words.json が同じフォルダにあるか確認してください。');
+    console.error(e);
+  }
+}
+
+function updateRangeInfo() {
+  const start = parseInt(document.getElementById('start').value) || 1;
+  const end = parseInt(document.getElementById('end').value) || 100;
+  const count = vocab.filter(w => w.number >= start && w.number <= end).length;
+  document.getElementById('range-info').textContent = `範囲内の単語数: ${count}語`;
+}
+
+function getFilteredVocab() {
+  const start = parseInt(document.getElementById('start').value) || 1;
+  const end = parseInt(document.getElementById('end').value) || 100;
+  return vocab.filter(w => w.number >= start && w.number <= end);
+}
+
+function startQuiz() {
+  currentPool = getFilteredVocab();
+  if (currentPool.length === 0) {
+    alert('指定範囲に単語がありません。');
+    return;
+  }
+  currentMode = document.getElementById('mode').value;
+  document.getElementById('menu-screen').classList.add('hidden');
+  document.getElementById('quiz-screen').classList.remove('hidden');
+  showNextWord();
+}
+
+function showNextWord() {
+  if (currentPool.length === 0) {
+    alert('この範囲の単語をすべて出しました。メニューに戻ります。');
+    backToMenu();
+    return;
+  }
+  const idx = Math.floor(Math.random() * currentPool.length);
+  currentWord = currentPool.splice(idx, 1)[0]; // 同じ単語を繰り返さない（範囲内で）
+  answered = false;
+
+  const wordEl = document.getElementById('word-text');
+  const answerEl = document.getElementById('answer-text');
+  const answerArea = document.getElementById('answer-area');
+  const answerBtn = document.getElementById('answer-btn');
+  const nextBtn = document.getElementById('next-btn');
+  const infoEl = document.getElementById('quiz-info');
+
+  if (currentMode === 'en2jp') {
+    wordEl.textContent = currentWord.english;
+    answerEl.textContent = currentWord.japanese;
+  } else {
+    // 和英の場合、日本語から意味部分を少し整形
+    let jp = currentWord.japanese;
+    wordEl.textContent = jp;
+    answerEl.textContent = currentWord.english;
+  }
+
+  answerArea.classList.remove('visible');
+  answerBtn.classList.remove('hidden');
+  nextBtn.classList.add('hidden');
+  infoEl.textContent = `範囲内残り: ${currentPool.length + 1}語`;
+}
+
+function showAnswer() {
+  if (answered || !currentWord) return;
+  answered = true;
+  document.getElementById('answer-area').classList.add('visible');
+  document.getElementById('answer-btn').classList.add('hidden');
+  document.getElementById('next-btn').classList.remove('hidden');
+}
+
+function backToMenu() {
+  document.getElementById('quiz-screen').classList.add('hidden');
+  document.getElementById('menu-screen').classList.remove('hidden');
+  currentPool = [];
+  currentWord = null;
+}
+
+document.getElementById('start').addEventListener('input', updateRangeInfo);
+document.getElementById('end').addEventListener('input', updateRangeInfo);
+document.getElementById('start-btn').addEventListener('click', startQuiz);
+document.getElementById('answer-btn').addEventListener('click', showAnswer);
+document.getElementById('next-btn').addEventListener('click', showNextWord);
+document.getElementById('menu-btn').addEventListener('click', backToMenu);
+
+// 初期読み込み
+loadVocab();
+</script>
+</body>
+</html>
