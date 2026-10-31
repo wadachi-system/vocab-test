@@ -57,11 +57,10 @@
     font-size: 1.05rem;
     font-weight: bold;
     cursor: pointer;
-    margin-top: 6px;
   }
   .btn-blue { background: #2563eb; color: white; }
   .btn-green { background: #16a34a; color: white; }
-  .btn-gray { background: #e2e8f0; color: #1a202c; }
+  .btn-gray { background: #e2e8f0; color: #1a202c; margin-top: 10px; }
   #quiz { display: none; }
   .word {
     text-align: center;
@@ -77,16 +76,33 @@
     border-radius: 8px;
     text-align: center;
     margin: 12px 0;
-    display: none;
+    min-height: 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    visibility: hidden;
   }
-  .answer.show { display: block; }
+  .answer.show { visibility: visible; }
   .info {
     text-align: center;
     color: #64748b;
     font-size: 0.9rem;
     margin: 8px 0;
   }
-  .hidden { display: none !important; }
+  /* ボタン位置を固定する領域 */
+  .button-area {
+    position: relative;
+    height: 52px;
+    margin-top: 8px;
+  }
+  .button-area button {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 52px;
+  }
+  .hidden { visibility: hidden; }
 </style>
 </head>
 <body>
@@ -120,8 +136,12 @@
       <div style="font-size:0.85rem;color:#64748b;">答え</div>
       <div id="answer" style="font-size:1.2rem;font-weight:bold;color:#16a34a;margin-top:4px;"></div>
     </div>
-    <button class="btn-blue" id="ans-btn" onclick="showAnswer()">答え</button>
-    <button class="btn-green hidden" id="next-btn" onclick="nextWord()">次へ</button>
+
+    <div class="button-area">
+      <button class="btn-blue" id="ans-btn" onclick="showAnswer()">答え</button>
+      <button class="btn-green hidden" id="next-btn" onclick="nextWord()">次へ</button>
+    </div>
+
     <button class="btn-gray" onclick="toMenu()">メニューに戻る</button>
   </div>
 
