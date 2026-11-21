@@ -44,11 +44,6 @@
     margin-bottom: 14px;
     box-sizing: border-box;
   }
-  .range {
-    display: flex;
-    gap: 10px;
-  }
-  .range > div { flex: 1; }
   button {
     width: 100%;
     padding: 14px;
@@ -131,16 +126,9 @@
   <h1>英単語確認テスト</h1>
 
   <div id="menu" class="card">
-    <div class="range">
-      <div>
-        <label>開始番号</label>
-        <input type="number" id="start" value="1" min="1" max="1709">
-      </div>
-      <div>
-        <label>終了番号</label>
-        <input type="number" id="end" value="100" min="1" max="1709">
-      </div>
-    </div>
+    <label>テーマ番号（1〜60）</label>
+    <input type="number" id="theme" value="1" min="1" max="60">
+
     <label>モード</label>
     <select id="mode">
       <option value="en2jp">英単語 → 日本語</option>
@@ -166,10 +154,74 @@
     <button class="btn-gray" onclick="toMenu()">メニューに戻る</button>
   </div>
 
-  <p class="info" style="margin-top:20px;">全1709語対応・GitHub Pages</p>
+  <p class="info" style="margin-top:20px;">テーマ選択対応・GitHub Pages</p>
 </div>
 
 <script>
+// テーマ番号 → [開始番号, 終了番号]
+const THEME_RANGES = {
+  1: [1, 19],
+  2: [20, 46],
+  3: [47, 64],
+  4: [65, 119],
+  5: [120, 163],
+  6: [164, 220],
+  7: [221, 243],
+  8: [244, 273],
+  9: [274, 346],
+  10: [347, 383],
+  11: [384, 398],
+  12: [399, 440],
+  13: [441, 467],
+  14: [468, 502],
+  15: [503, 519],
+  16: [520, 535],
+  17: [536, 553],
+  18: [554, 582],
+  19: [583, 626],
+  20: [627, 638],
+  21: [639, 674],
+  22: [675, 690],
+  23: [691, 713],
+  24: [714, 727],
+  25: [728, 736],
+  26: [737, 776],
+  27: [777, 798],
+  28: [799, 853],
+  29: [854, 890],
+  30: [891, 934],
+  31: [935, 958],
+  32: [959, 983],
+  33: [984, 1009],
+  34: [1010, 1029],
+  35: [1030, 1074],
+  36: [1075, 1169],
+  37: [1170, 1190],
+  38: [1191, 1210],
+  39: [1211, 1219],
+  40: [1220, 1235],
+  41: [1236, 1296],
+  42: [1297, 1332],
+  43: [1333, 1364],
+  44: [1365, 1379],
+  45: [1380, 1388],
+  46: [1389, 1459],
+  47: [1460, 1483],
+  48: [1484, 1571],
+  49: [1572, 1590],
+  50: [1591, 1623],
+  51: [1624, 1682],
+  52: [1683, 1709],
+  53: [1710, 1793],
+  54: [1794, 1810],
+  55: [1811, 1835],
+  56: [1836, 1880],
+  57: [1881, 1911],
+  58: [1912, 1941],
+  59: [1942, 1968],
+  60: [1969, 99999]
+};
+
 let vocab = [];
 let pool = [];
 let mode = 'en2jp';
@@ -182,16 +234,25 @@ async function loadVocab() {
   } catch (e) {
     document.getElementById('count').textContent = '単語データの読み込みに失敗しました';
     console.error(e);
-    alert('words.json の読み込みに失敗しました。ファイルが同じ場所にあるか確認してください。');
+    alert('words.json の読み込みに失敗しました。');
   }
+}
+
+function getThemeRange(theme) {
+  return THEME_RANGES[theme] || null;
 }
 
 function updateCount() {
   if (!vocab.length) return;
-  const s = +document.getElementById('start').value || 1;
-  const e = +document.getElementById('end').value || 100;
-  const n = vocab.filter(w => w.number >= s && w.number <= e).length;
-  document.getElementById('count').textContent = '範囲内の単語数: ' + n + '語';
+  const t = +document.getElementById('theme').value || 1;
+  const range = getThemeRange(t);
+  if (!range) {
+    document.getElementById('count').textContent = 'テーマ番号が不正です';
+    return;
+  }
+  const [start, end] = range;
+  const n = vocab.filter(w => w.number >= start && w.number <= end).length;
+  document.getElementById('count').textContent = `テーマ${t}（${start}〜${end === 99999 ? '末尾' : end}）: ${n}語`;
 }
 
 function startQuiz() {
@@ -199,11 +260,16 @@ function startQuiz() {
     alert('単語データがまだ読み込まれていません');
     return;
   }
-  const s = +document.getElementById('start').value || 1;
-  const e = +document.getElementById('end').value || 100;
-  pool = vocab.filter(w => w.number >= s && w.number <= e);
+  const t = +document.getElementById('theme').value || 1;
+  const range = getThemeRange(t);
+  if (!range) {
+    alert('テーマ番号は1〜60を入力してください');
+    return;
+  }
+  const [start, end] = range;
+  pool = vocab.filter(w => w.number >= start && w.number <= end);
   if (pool.length === 0) {
-    alert('指定範囲に単語がありません');
+    alert('このテーマの単語が現在のデータにありません（後日更新予定）');
     return;
   }
   mode = document.getElementById('mode').value;
@@ -214,7 +280,7 @@ function startQuiz() {
 
 function nextWord() {
   if (pool.length === 0) {
-    alert('この範囲の単語をすべて出しました');
+    alert('このテーマの単語をすべて出しました');
     toMenu();
     return;
   }
@@ -247,8 +313,7 @@ function toMenu() {
   pool = [];
 }
 
-document.getElementById('start').oninput = updateCount;
-document.getElementById('end').oninput = updateCount;
+document.getElementById('theme').oninput = updateCount;
 
 loadVocab();
 </script>
